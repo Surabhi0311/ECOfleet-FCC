@@ -1,0 +1,296 @@
+{
+  "info": {
+    "name": "ECOfleet REST API",
+    "description": "Full workflow smoke walkthrough. Run Login first; it saves the bearer token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5050/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "requestId",
+      "value": ""
+    },
+    {
+      "key": "routeId",
+      "value": ""
+    },
+    {
+      "key": "stopId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "Login admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Login succeeds',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('token',pm.response.json().token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\":\"admin\",\"password\":\"Password@123\"}"
+        },
+        "url": "{{baseUrl}}/auth/login"
+      }
+    },
+    {
+      "name": "Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/dashboard"
+      }
+    },
+    {
+      "name": "Catalog",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/catalog"
+      }
+    },
+    {
+      "name": "List pickup requests",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/requests"
+      }
+    },
+    {
+      "name": "Plan pending routes",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"date\":\"2026-10-23\"}"
+        },
+        "url": "{{baseUrl}}/routes/plan"
+      }
+    },
+    {
+      "name": "List routes",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/routes"
+      }
+    },
+    {
+      "name": "Reports",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/reports"
+      }
+    },
+    {
+      "name": "Register generator",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Demo Contact\", \"username\": \"new_generator\", \"email\": \"generator@example.test\", \"password\": \"Password123!\", \"organization\": \"Demo Recyclers\", \"type\": \"Factory\", \"contact\": \"555-0100\", \"address\": \"Central District\", \"zone\": \"REPLACE_WITH_ZONE_ID\"}"
+        },
+        "url": "{{baseUrl}}/auth/register"
+      }
+    },
+    {
+      "name": "Generator registration zones",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/public/zones"
+      }
+    },
+    {
+      "name": "Driver arrive at stop",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"action\": \"arrive\"}"
+        },
+        "url": "{{baseUrl}}/routes/{{routeId}}/stops/{{stopId}}"
+      }
+    },
+    {
+      "name": "Driver complete and record weights",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"action\": \"complete\", \"actualKg\": [100, 25]}"
+        },
+        "url": "{{baseUrl}}/routes/{{routeId}}/stops/{{stopId}}"
+      }
+    },
+    {
+      "name": "Driver skip stop with reason",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"action\": \"skip\", \"reason\": \"Generator site closed\"}"
+        },
+        "url": "{{baseUrl}}/routes/{{routeId}}/stops/{{stopId}}"
+      }
+    },
+    {
+      "name": "Record disposal",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"route\": \"REPLACE_WITH_ROUTE_ID\", \"facility\": \"REPLACE_WITH_FACILITY_ID\", \"category\": \"REPLACE_WITH_CATEGORY_ID\", \"quantityKg\": 100}"
+        },
+        "url": "{{baseUrl}}/disposals"
+      }
+    },
+    {
+      "name": "Admin user access list",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/admin/users"
+      }
+    },
+    {
+      "name": "URL module demonstration",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/diagnostics/url?demo=course"
+      }
+    }
+  ]
+}
